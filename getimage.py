@@ -1,6 +1,7 @@
-#written for klte running on RR-N-v5.8.0-20170117-klte-Official
-#no guarantees of working with other devices or other ROMs
-
+# written for klte running on RR-N-v5.8.0-20170117-klte-Official
+# no guarantees of working with other devices or other ROMs
+# requires android debugging allowed on the device and adb installed on the pc
+# https://forum.xda-developers.com/showthread.php?t=2588979
 import subprocess
 import datetime
 
