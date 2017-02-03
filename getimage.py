@@ -7,14 +7,20 @@ from re import search
     
 def getimage(camerapath = "storage/emulated/0/dcim/camera"):
     try:
-        output = subprocess.check_output('adb shell ls -t "{0}" | head -n 1'.
+        output = subprocess.check_output('adb shell ls "{0}" -t | head -n 1'.
                                          format(camerapath))
+        # run some nice linux shell commands via adb
     except subprocess.CalledProcessError:
-        msg = "Android debbuging is disabled on the phone\n or the phone is disconnected"
+        msg = "Android debbuging is disabled on the phone\n or the phone is disconnected."
         print("Error!\n", msg)
         return None
     #print(output)
-    filename = search("IMG.*jpg", str(output))[0]
+    filename = search("IMG.*jpg", str(output))
+    if not filename:
+        msg = "No such file or directory."  
+        print("Error!\n", msg)
+        return None
+    filename = filename[0]
     print(filename)
     subprocess.run('adb pull "{0}/{1}" "cache.jpg"'.
                    format(camerapath, filename))
