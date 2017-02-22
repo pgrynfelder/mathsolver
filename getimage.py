@@ -5,7 +5,7 @@
 import subprocess
 from re import search
     
-def getimage(camerapath = "storage/emulated/0/dcim/camera"):
+def load(camerapath, target):
     try:
         output = subprocess.check_output('adb shell ls "{0}" -t | head -n 1'.
                                          format(camerapath))
@@ -15,15 +15,16 @@ def getimage(camerapath = "storage/emulated/0/dcim/camera"):
         print("Error!\n", msg)
         return None
     #print(output)
-    filename = search("IMG.*jpg", str(output))
+    filename = search("IMG.*\.jpg", str(output))
     if not filename:
         msg = "No such file or directory."  
         print("Error!\n", msg)
         return None
     filename = filename[0]
-    print(filename)
-    subprocess.run('adb pull "{0}/{1}" "cache.jpg"'.
-                   format(camerapath, filename))
-    
-if __name__ == '__main__':
-    getimage()
+    subprocess.run('adb pull "{0}/{1}" "{2}"'.
+                   format(camerapath, filename, target))
+    return True
+
+def delimage():
+    subprocess.run('del "cache.jpg"')
+    return True        
