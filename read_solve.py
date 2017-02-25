@@ -16,8 +16,12 @@ FROM_PHONE = object()
 
 #after the star are keyword arguments ~Kubin (delete this when merging)
 
-def read_solve(filename=FROM_PHONE, *, tool=pyocr.tesseract, phone_dir="storage/emulated/0/DCIM/Camera",
-                                       ocr_lang="eng"):
+def read_solve(filename=FROM_PHONE,
+               *,
+               tool=pyocr.tesseract,
+               phone_dir="storage/emulated/0/DCIM/Camera",
+               ocr_lang="eng"):
+    TEMP = "cache.png"
     print("===Start reading===")
     if filename is FROM_PHONE:
         img_from_phone.load(phone_dir, TEMP)
@@ -29,7 +33,6 @@ def read_solve(filename=FROM_PHONE, *, tool=pyocr.tesseract, phone_dir="storage/
         raise FileNotFoundError("Invalid image filename")
 
     imgformat.prepare_image(img)
-    TEMP = "cache.png"
     cv2.imwrite(TEMP, img)
     img = Image.open(TEMP)
     preformatted_text = tool.image_to_string(img, lang=ocr_lang)
