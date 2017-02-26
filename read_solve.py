@@ -14,14 +14,8 @@ import sympy_utils
 #Identifier for solve call with image from phone camera
 FROM_PHONE = object()  
 
-#after the star are keyword arguments ~Kubin (delete this when merging)
-
-def read_solve(filename=FROM_PHONE,
-               *,
-               tool=pyocr.tesseract,
-               phone_dir="storage/emulated/0/DCIM/Camera",
-               ocr_lang="eng"):
-    TEMP = "cache.png"
+def read_solve(filename=FROM_PHONE, *, tool=pyocr.tesseract, phone_dir="storage/emulated/0/DCIM/Camera",
+                                       ocr_lang="eng"):
     print("===Start reading===")
     if filename is FROM_PHONE:
         img_from_phone.load(phone_dir, TEMP)
@@ -32,12 +26,14 @@ def read_solve(filename=FROM_PHONE,
     if not img.any():
         raise FileNotFoundError("Invalid image filename")
 
-    imgformat.prepare_image(img)
-    cv2.imwrite(TEMP, img)
-    img = Image.open(TEMP)
-    preformatted_text = tool.image_to_string(img, lang=ocr_lang)
-        
-    if not preformatted_text:
+    for t in range(2):
+        TEMP = "cache.png"; cv2.imwrite(TEMP, img); imgt = Image.open(TEMP)
+        preformatted_text = tool.image_to_string(imgt, lang=ocr_lang)  
+        if not preformatted_text:
+            img = imgformat.prepare_image(img)
+        else:
+            break
+    else:
         raise ValueError("Cannot find any text in image")
     
     try:
@@ -50,9 +46,10 @@ def read_solve(filename=FROM_PHONE,
     text = preformatted_text
     
     # Common OCR mistakes
-    text = text_utils.casefix(text)
     text = text_utils.fix_common_mistakes(text)
     text = text_utils.fix_syntax_mistakes(text)
+    text = text_utils.casefix(text)
+    text = text_utils.fix_exponentation(text)
         
     # Create left and right side of equation
     split = text.split("=")
@@ -79,7 +76,12 @@ def read_solve(filename=FROM_PHONE,
     return result
 
 if __name__ == "__main__":
-    tests = ["3x.png", "test3.png", "test4.png", "example2.jpg"]
+    tests = ["3x.png", "test1.png", "test2.png", "test3.png", "test4.png",
+             "example1.jpg", "example2.jpg"]
     for test in tests:
         result = read_solve(test)
         print(result, "\n\n")
+        input("Press enter...")
+    #result = read_solve("test2.png")
+    #print(result, "\n\n")
+

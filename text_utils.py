@@ -1,5 +1,5 @@
 import functools
-from string import ascii_lowercase as VALID_LETTERS
+from string import ascii_lowercase as VALID_LETTERS, digits
 
 COMMON_MISTAKES = {'"': '^',
                    '“': '^',
@@ -31,6 +31,26 @@ fix_common_mistakes = functools.partial(fix_mistakes_base,
 
 fix_syntax_mistakes = functools.partial(fix_mistakes_base,
                                         mistakes=SYNTAX_MISTAKES)
+
+
+def fix_exponentation(text):
+    text = list(text)
+    while True:
+        found_var = False
+        for i, char in enumerate(text):
+            if char in VALID_LETTERS:
+                found_var = True
+            else:
+                if found_var and char in digits:
+                    text.insert(i, "**")
+                    break
+                else:
+                    found_var = False
+        else:
+            break
+    text = "".join(text)
+    return text
+        
 
 
 def find_variables(text):
