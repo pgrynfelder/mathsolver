@@ -3,6 +3,7 @@
 # requires android debugging enabled on the device and adb installed on the pc
 # adb easy install: https://forum.xda-developers.com/showthread.php?t=2588979
 import subprocess
+import os
 import re
 
 class AndroidDebuggingError(Exception): pass

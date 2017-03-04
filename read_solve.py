@@ -67,12 +67,16 @@ def full_solve(text, *, doprint=True):
     vars2 = text_utils.find_variables(text2)
     # Get both the left and right side
     variables = list(set(vars1) | set(vars2))
-
     print("===Start computing===")
     expr1 = sympy_utils.simple_expr_parse(text1)
     expr2 = sympy_utils.simple_expr_parse(text2)
     
     print("The equation: {} = {}".format(expr1, expr2))
+    if not variables:
+        if sp.simplify(expr1) == sp.simplify(expr2):
+            return sp.S.Reals
+        else:
+            return sp.EmptySet()
     result = sympy_utils.simple_solve(expr1, expr2, variables)
     print("Result: {}".format(result))
     return result
@@ -85,7 +89,8 @@ def read_solve(filename, *, tool=pyocr.tesseract, phone_dir="storage/emulated/0/
     return result
 
 testing_files = False
-testing_fromphone = True
+testing_fromphone = False
+testing_edgecases = False
 
 if __name__ == "__main__":
     if testing_files:
@@ -98,5 +103,7 @@ if __name__ == "__main__":
     if testing_fromphone:
         result = read_solve(FROM_PHONE)
         print(result)
-        
-
+    if testing_edgecases:
+        result1 = full_solve("0 = 1")
+        result2 = full_solve("0 = 0")
+        print(result1, result2)
