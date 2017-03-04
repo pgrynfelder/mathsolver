@@ -4,16 +4,18 @@ from string import ascii_lowercase as VALID_LETTERS, digits
 COMMON_MISTAKES = {'"': '^',
                    '“': '^',
                    ' ': '',
-                   ':': '=',
                    'A': '^',
                    '-+': '+',
                    '¢': '*',
                    'O': '0',
                    '—': '-',
-                   "х": "x"}
+                   "х": "x",
+                   "l": "1"}
 
 
-SYNTAX_MISTAKES = {'^': '**'}
+SYNTAX_MISTAKES = {'^': '**',
+                   ",": ".",
+                   ":": "/"}
 
 def casefix(text):
     return text.casefold()
@@ -51,11 +53,19 @@ def fix_exponentation(text):
     text = "".join(text)
     return text
         
-
-
 def find_variables(text):
     variables = []
     for letter in text:
         if letter in VALID_LETTERS and letter not in variables:
             variables.append(letter)
     return variables
+
+def find_equation_sides(text):
+    split = text.split("=")
+    if len(split) == 1:
+        text1, text2 = split[0], "0"
+    elif len(split) == 2:
+        text1, text2 = split
+    else:
+        raise ValueError("Found {} equality signs, max is 1".format(len(split)))
+    return text1, text2
