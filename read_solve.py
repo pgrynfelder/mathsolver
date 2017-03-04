@@ -14,9 +14,15 @@ import sympy_utils
 #Identifier for solve call with image from phone camera
 FROM_PHONE = object()  
 
-def read_solve(filename=FROM_PHONE, *, tool=pyocr.tesseract, phone_dir="storage/emulated/0/DCIM/Camera",
-                                       ocr_lang="eng"):
+NOPRINT = lambda *args, **kwargs: None
+CPRINT = print
+
+def full_read(filename, *, tool=pyocr.tesseract, phone_dir="storage/emulated/0/DCIM/Camera",
+                           ocr_lang="eng", doprint=True):
+    if not doprint: print = NOPRINT
+    else:           print = CPRINT
     print("===Start reading===")
+    TEMP = "cache.png"
     if filename is FROM_PHONE:
         img_from_phone.load(phone_dir, TEMP)
         img = cv2.imread(TEMP, 0)
@@ -26,15 +32,11 @@ def read_solve(filename=FROM_PHONE, *, tool=pyocr.tesseract, phone_dir="storage/
     if not img.any():
         raise FileNotFoundError("Invalid image filename")
 
-    for t in range(2):
-        TEMP = "cache.png"; cv2.imwrite(TEMP, img); imgt = Image.open(TEMP)
-        preformatted_text = tool.image_to_string(imgt, lang=ocr_lang)  
-        if not preformatted_text:
-            img = imgformat.prepare_image(img)
-        else:
-            break
-    else:
-        raise ValueError("Cannot find any text in image")
+    img = imgformat.prepare_image(img, False)
+    cv2.imwrite(TEMP, img); imgt = Image.open(TEMP)
+    preformatted_text = tool.image_to_string(imgt, lang=ocr_lang)  
+    if not preformatted_text:
+        raise ValueError("Could not find any text in image")
     
     try:
         print("Preformatted text:", preformatted_text)
@@ -44,21 +46,21 @@ def read_solve(filename=FROM_PHONE, *, tool=pyocr.tesseract, phone_dir="storage/
 
     print("---Format input---") 
     text = preformatted_text
+
+    return text
+
     
+def full_solve(text, *, doprint=True):
+    if not doprint: print = NOPRINT
+    else:           print = CPRINT
     # Common OCR mistakes
     text = text_utils.fix_common_mistakes(text)
     text = text_utils.fix_syntax_mistakes(text)
     text = text_utils.casefix(text)
     text = text_utils.fix_exponentation(text)
-        
-    # Create left and right side of equation
-    split = text.split("=")
-    if len(split) == 1:
-        text1, text2 = split[0], "0"
-    elif len(split) == 2:
-        text1, text2 = split
-    else:
-        raise ValueError("Found {} equality signs, max is 1".format(len(split)))
+
+    # Left and right side of the equation
+    text1, text2 = text_utils.find_equation_sides(text)
         
     # Extract the variable in the equation
     vars1 = text_utils.find_variables(text1)
@@ -75,13 +77,26 @@ def read_solve(filename=FROM_PHONE, *, tool=pyocr.tesseract, phone_dir="storage/
     print("Result: {}".format(result))
     return result
 
+def read_solve(filename, *, tool=pyocr.tesseract, phone_dir="storage/emulated/0/DCIM/Camera",
+                            ocr_lang="eng", doprint=True):
+    text = full_read(filename, tool=tool, phone_dir=phone_dir, ocr_lang=ocr_lang, doprint=doprint)
+    result = full_solve(text, doprint=doprint)
+    
+    return result
+
+testing_files = False
+testing_fromphone = True
+
 if __name__ == "__main__":
-    tests = ["3x.png", "test1.png", "test2.png", "test3.png", "test4.png",
-             "example1.jpg", "example2.jpg"]
-    for test in tests:
-        result = read_solve(test)
-        print(result, "\n\n")
-        input("Press enter...")
-    #result = read_solve("test2.png")
-    #print(result, "\n\n")
+    if testing_files:
+        tests = ["3x.png", "test3.png", "test4.png",
+                 "example1.jpg", "example2.jpg"]
+        for test in tests:
+            result = read_solve(test)
+            print(result, "\n\n")
+            input("Press enter...\n\n")
+    if testing_fromphone:
+        result = read_solve(FROM_PHONE)
+        print(result)
+        
 

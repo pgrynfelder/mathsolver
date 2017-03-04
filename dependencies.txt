@@ -1,0 +1,7 @@
+name,pipname,universal
+cv2,opencv-python,False
+numpy,,False
+sympy,,True
+imutils,,True
+pyocr,,True
+PIL,Pillow,False
