@@ -32,7 +32,7 @@ def full_read(filename, *, tool=pyocr.tesseract, phone_dir="storage/emulated/0/D
     if not img.any():
         raise FileNotFoundError("Invalid image filename")
 
-    img = imgformat.prepare_image(img, False)
+    img = imgformat.prepare_image(img, False, 200)
     cv2.imwrite(TEMP, img); imgt = Image.open(TEMP)
     preformatted_text = tool.image_to_string(imgt, lang=ocr_lang)  
     if not preformatted_text:
