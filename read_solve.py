@@ -32,8 +32,10 @@ def full_read(filename, *, tool=pyocr.tesseract, phone_dir="storage/emulated/0/D
     if not img.any():
         raise FileNotFoundError("Invalid image filename")
 
-    img = imgformat.prepare_image(img, False, 200)
+    # Preprocessing
+    img = imgformat.prepare_image(img, True)
     cv2.imwrite(TEMP, img); imgt = Image.open(TEMP)
+    # > OCR <
     preformatted_text = tool.image_to_string(imgt, lang=ocr_lang)  
     if not preformatted_text:
         raise ValueError("Could not find any text in image")
@@ -83,21 +85,27 @@ def full_solve(text, *, doprint=True):
 
 def read_solve(filename, *, tool=pyocr.tesseract, phone_dir="storage/emulated/0/DCIM/Camera",
                             ocr_lang="eng", doprint=True):
-    text = full_read(filename, tool=tool, phone_dir=phone_dir, ocr_lang=ocr_lang, doprint=doprint)
+    text = full_read(filename, tool=tool, phone_dir=phone_dir,
+                               ocr_lang=ocr_lang, doprint=doprint)
     result = full_solve(text, doprint=doprint)
     
     return result
 
+# Testing settings
 testing_files = False
 testing_fromphone = False
 testing_edgecases = False
 
+testing = any(testing_files, testing_fromphone, testing_edgecases)
+
+# Main
 if __name__ == "__main__":
     if testing_files:
-        tests = ["3x.png", "test3.png", "test4.png",
+        tests = ["3x.png", "test1.png", "test2.png", "test3.png", "test4.png",
                  "example1.jpg", "example2.jpg"]
         for test in tests:
-            result = read_solve(test)
+            print("Test: {}".format(test))
+            result = read_solve("tests/"+test)
             print(result, "\n\n")
             input("Press enter...\n\n")
     if testing_fromphone:
