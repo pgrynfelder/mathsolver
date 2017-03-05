@@ -96,7 +96,7 @@ testing_files = False
 testing_fromphone = False
 testing_edgecases = False
 
-testing = any(testing_files, testing_fromphone, testing_edgecases)
+testing = any((testing_files, testing_fromphone, testing_edgecases))
 
 # Main
 if __name__ == "__main__":
