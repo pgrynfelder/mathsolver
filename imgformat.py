@@ -20,7 +20,7 @@ def relative_resize_h(img, toheight):
     return cv2.resize(img, (towidth, toheight))
 
 # Kept here for Lega-pitek-cy reasons
-def contours_edges_old(img, contours):
+def contours_edges_old(img, contours, fix=10):
     minx = img.shape[1]
     maxx = 0
     miny = img.shape[0]
@@ -32,10 +32,10 @@ def contours_edges_old(img, contours):
                 maxx = max(maxx, g[0])
                 miny = min(miny, g[1])
                 maxy = max(maxy, g[1])
-    miny -= 10
-    minx -= 10
-    maxy += 10
-    maxx += 10
+    miny -= fix
+    minx -= fix
+    maxy += fix
+    maxx += fix
     if miny < 0:
         miny = 0
     if minx < 0:
@@ -46,17 +46,17 @@ def contours_edges_old(img, contours):
         maxx = img.shape[1]
     return minx, miny, maxx, maxy
 
-def contours_edges(img, contours):
+def contours_edges(img, contours, fix=10):
     h, w = img.shape
     transformed = [tuple(min(sub.flatten().reshape(-1, 2), key=sum)) for sub in contours]
     x_vals = reduce(np.union1d, [array.flatten()[::2]  for array in contours])
     y_vals = reduce(np.union1d, [array.flatten()[1::2] for array in contours])
     minx, miny, maxx, maxy = x_vals[0], y_vals[0], x_vals[-1], y_vals[-1]
-    minx = max(minx - 10, 0); miny = max(miny - 10, 0)
-    maxx = min(maxx + 10, w); maxy = min(maxy + 10, h)
+    minx = max(minx - fix, 0); miny = max(miny - fix, 0)
+    maxx = min(maxx + fix, w); maxy = min(maxy + fix, h)
     return minx, miny, maxx, maxy
 
-def prepare_image(img, dodeskew=True, height=200):
+def prepare_image(img, dodeskew=True, height=200, contour_fix=10, contours_edges=contours_edges):
     # Threshold
     thresh, img = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
     # Bitwise not    
@@ -68,8 +68,8 @@ def prepare_image(img, dodeskew=True, height=200):
             img = imutils.rotate_bound(img, -angle)
             angle = deskew.calculate(img)
     # Crop
-    im2, contours, hierarchy = cv2.findContours(img,1,2)
-    minx, miny, maxx, maxy = contours_edges(img, contours)
+    im2, contours, hierarchy = cv2.findContours(img, 1, 2)
+    minx, miny, maxx, maxy = contours_edges(img, contours, contour_fix)
     img = img[miny:maxy, minx:maxx]
     # Resize
     img = relative_resize_h(img, height)

@@ -17,6 +17,12 @@ FROM_PHONE = object()
 NOPRINT = lambda *args, **kwargs: None
 CPRINT = print
 
+def run_ocr(img, lang="eng"):
+    for i in range(2):
+        try:
+            result = tool.image_to_string(imgt, lang=ocr_lang)
+        except 
+
 def full_read(filename, *, tool=pyocr.tesseract, phone_dir="storage/emulated/0/DCIM/Camera",
                            ocr_lang="eng", doprint=True):
     if not doprint: print = NOPRINT
@@ -36,7 +42,7 @@ def full_read(filename, *, tool=pyocr.tesseract, phone_dir="storage/emulated/0/D
     img = imgformat.prepare_image(img, True)
     cv2.imwrite(TEMP, img); imgt = Image.open(TEMP)
     # > OCR <
-    preformatted_text = tool.image_to_string(imgt, lang=ocr_lang)  
+    preformatted_text = run_ocr(imgt, lang=ocr_lang)  
     if not preformatted_text:
         raise ValueError("Could not find any text in image")
     
