@@ -11,7 +11,6 @@ import imgformat
 import text_utils
 import sympy_utils
 
-import csv # presentation purposes
 
 #Identifier for solve call with image from phone camera
 FROM_PHONE = object()  
@@ -91,9 +90,8 @@ def full_solve(text, *, doprint=True):
     #return result
     result = list(sympy_utils.solve_all(expr1, expr2, variables))
     for example in result:
-        toprint = str("{} ∈ {}".format(example[0], example[1]))
+        toprint = "{} ∈ {}".format(example[0], example[1])
         print(toprint)
-    writer.writerow([result])
     return result
 
 def read_solve(filename, *, tool=pyocr.tesseract, phone_dir="storage/emulated/0/DCIM/Camera",
