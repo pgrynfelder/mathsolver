@@ -5,6 +5,7 @@
 import subprocess
 import os
 import re
+import cv2
 
 class AndroidDebuggingError(Exception): pass
     
@@ -15,6 +16,7 @@ def load(camerapath="storage/emulated/0/DCIM/Camera", target="cache.png"):
         msg = "Android debbuging is disabled on the phone\n or the phone is disconnected."
         raise AndroidDebuggingError(msg)
     filename = output.decode().strip()
+    filename = re.search("IMG.*\.jpg", filename).group(0)
     if not filename:
         msg = "No such file or directory on the phone."
         raise FileNotFoundError(msg)
