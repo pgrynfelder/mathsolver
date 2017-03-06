@@ -67,6 +67,7 @@ def prepare_image(img, dodeskew=True, height=200, contour_fix=10, contours_edges
         while abs(angle) > 15:
             img = imutils.rotate_bound(img, -angle)
             angle = deskew.calculate(img)
+        #img = imutils.rotate_bound(img, -angle)
     # Crop
     im2, contours, hierarchy = cv2.findContours(img, 1, 2)
     minx, miny, maxx, maxy = contours_edges(img, contours, contour_fix)

@@ -11,6 +11,8 @@ import imgformat
 import text_utils
 import sympy_utils
 
+import csv # presentation purposes
+
 #Identifier for solve call with image from phone camera
 FROM_PHONE = object()  
 
@@ -32,9 +34,10 @@ def full_read(filename, *, tool=pyocr.tesseract, phone_dir="storage/emulated/0/D
     # Check if the image loaded correctly
     if not img.any():
         raise FileNotFoundError("Invalid image filename")
-
+    cv2.imwrite('grayscale.png', img)# presentation purposes
     # Preprocessing
     img = imgformat.prepare_image(img, True)
+    cv2.imwrite('preprocessed.png', img)# presentation purposes
     cv2.imwrite(TEMP, img); imgt = Image.open(TEMP)
     # > OCR <
     preformatted_text = tool.image_to_string(imgt, lang=ocr_lang)  
@@ -57,11 +60,12 @@ def full_solve(text, *, doprint=True):
     if not doprint: print = NOPRINT
     else:           print = CPRINT
     # Common OCR mistakes
+    
     text = text_utils.fix_common_mistakes(text)
     text = text_utils.fix_syntax_mistakes(text)
     text = text_utils.casefix(text)
     text = text_utils.fix_exponentation(text)
-
+        
     # Left and right side of the equation
     text1, text2 = text_utils.find_equation_sides(text)
         
@@ -73,15 +77,23 @@ def full_solve(text, *, doprint=True):
     print("===Start computing===")
     expr1 = sympy_utils.simple_expr_parse(text1)
     expr2 = sympy_utils.simple_expr_parse(text2)
+
+    equation = "{} = {}".format(expr1, expr2)
+    print("The equation: {}".format(equation))
     
-    print("The equation: {} = {}".format(expr1, expr2))
     if not variables:
         if sp.simplify(expr1) == sp.simplify(expr2):
             return sp.S.Reals
         else:
             return sp.EmptySet()
-    result = sympy_utils.simple_solve(expr1, expr2, variables)
-    print("Result: {}".format(result))
+    #result = sympy_utils.simple_solve(expr1, expr2, variables)
+    #print("Result: {}".format(result))
+    #return result
+    result = list(sympy_utils.solve_all(expr1, expr2, variables))
+    for example in result:
+        toprint = str("{} ∈ {}".format(example[0], example[1]))
+        print(toprint)
+    writer.writerow([result])
     return result
 
 def read_solve(filename, *, tool=pyocr.tesseract, phone_dir="storage/emulated/0/DCIM/Camera",
@@ -93,16 +105,16 @@ def read_solve(filename, *, tool=pyocr.tesseract, phone_dir="storage/emulated/0/
     return result
 
 # Testing settings
-testing_files = False
-testing_fromphone = True
-testing_edgecases = False
+testing_files = 0
+testing_fromphone = 0
+testing_edgecases = 0
 
 testing = any((testing_files, testing_fromphone, testing_edgecases))
 
 # Main
 if __name__ == "__main__":
     if testing_files:
-        tests = ["3x.png", "test1.png", "test2.png", "test3.png", "test4.png",
+        tests = ["test1.png", "test2.png", "test3.png", "test4.png",
                  "example1.jpg", "example2.jpg"]
         for test in tests:
             print("Test: {}".format(test))
